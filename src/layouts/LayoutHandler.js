@@ -20,9 +20,9 @@ class LayoutHandler extends Component {
         super(props);
         this.appContext = context;
 
-    }
+    };
 
-    getRouteSettings = () => {
+    getRouteSettings() {
         const {routes} = this.appContext;
 
         const matched = matchRoutes(routes, this.props.location.pathname)[0];
