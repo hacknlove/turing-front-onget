@@ -25,20 +25,20 @@ function PaperComponent(props) {
 }
 
 function handleClose() {
-  set('fast://authVisible', false)
+  set('fast://authVisible', false);
 }
 
 function handleRegisterNav() {
-  set('fast://authMode', true)
+  set('fast://authMode', true);
 }
 
 function handleLoginNav() {
-  set('fast://authMode', false)
+  set('fast://authMode', false);
 }
 
-function AuthDialog ({ classes }) {
-  const open = useOnGet('fast://authVisible')
-  const register = useOnGet('fast://authMode')
+function AuthDialog({ classes }) {
+  const open = useOnGet('fast://authVisible', { first: false });
+  const register = useOnGet('fast://authMode');
   return (
     <div>
       <Dialog

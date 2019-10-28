@@ -26,6 +26,7 @@ module.exports = {
     'react/prop-types': 0,
 
     'jsx-a11y/anchor-is-valid': 0,
-    'react/destructuring-assignment': 0
+    'react/destructuring-assignment': 0,
+    'react/jsx-props-no-spreading': 0
   },
 };

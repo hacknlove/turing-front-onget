@@ -46,7 +46,9 @@ function Home({ classes }) {
       description_length: 200,
     },
   });
-  const currentProducts = useOnGet(`${systemConfig.serverBaseUrl}/products?page=${page}&limit=${limit}&description_length=${description_length}`);
+  const currentProducts = useOnGet(`${systemConfig.serverBaseUrl}/products?page=${page}&limit=${limit}&description_length=${description_length}`, {
+    first: [],
+  });
 
   return (
     <div className={classes.root}>
