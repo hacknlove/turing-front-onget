@@ -6,7 +6,7 @@
  * - Filter should dynamically dislay attribute values like Size and Color from backend
  * - Price on the Price slider should change as the user slide through in the Filter
  * - Implement functionalities for search in the Nav bar and filter bar
- * - Implement funtionality for reset on filter component
+ * - Implement functionality for reset on filter component
  * - Implement pagination for products
  *
  */
@@ -24,11 +24,8 @@ import { useOnGet } from 'onget';
 import { Slider } from 'material-ui-slider';
 import withWidth from '@material-ui/core/withWidth';
 import { withRouter } from 'react-router-dom';
-import { bindActionCreators } from 'redux';
-import connect from 'react-redux/es/connect/connect';
 import FiberManualRecord from '@material-ui/icons/FiberManualRecord';
 import Close from '@material-ui/icons/Close';
-import * as productActions from '../../store/actions/products';
 import styles from './styles';
 import { Container, Section } from '../../components/Layout';
 import ListProduct from '../../components/ListProduct';
@@ -41,14 +38,17 @@ import systemConfig from '../../config/system';
 function Home({ classes }) {
   const { page, limit, description_length } = useOnGet('fast://pagination', {
     first: {
-      page: 0,
+      page: 1,
       limit: 10,
-      description_length: 200,
+      description_length: 120,
     },
   });
-  const currentProducts = useOnGet(`${systemConfig.serverBaseUrl}/products?page=${page}&limit=${limit}&description_length=${description_length}`, {
-    first: [],
+  const response = useOnGet(`${systemConfig.serverBaseUrl}/products?page=${page}&limit=${limit}&description_length=${description_length}`, {
+    first: {
+      rows: [],
+    },
   });
+  const currentProducts = response.rows;
 
   return (
     <div className={classes.root}>
@@ -248,7 +248,7 @@ function Home({ classes }) {
             </div>
             <div className="w-3/4 flex flex-wrap ml-6 productsSection">
               {currentProducts.map((product) => (
-                <div key={product.link} className="w-full sm:w-1/2 md:w-1/2 lg:w-1/2 xl:w-1/3 mb-4">
+                <div key={product.product_id} className="w-full sm:w-1/2 md:w-1/2 lg:w-1/2 xl:w-1/3 mb-4">
                   <ListProduct product={product} />
                 </div>
               ))}
@@ -266,20 +266,8 @@ function Home({ classes }) {
   );
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
-    getAllProducts: productActions.getAllProducts,
-  }, dispatch);
-}
-
-function mapStateToProps({ products }) {
-  return {
-    products: products.all.data.rows,
-  };
-}
-
 export default withWidth()(
   withStyles(styles, {
     withTheme: true,
-  })(withRouter(connect(mapStateToProps, mapDispatchToProps)(Home))),
+  })(withRouter(Home)),
 );

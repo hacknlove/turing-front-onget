@@ -2,8 +2,6 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
 import { matchRoutes } from 'react-router-config';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import { get } from 'onget';
 import Layouts from './Layouts';
 
@@ -41,14 +39,7 @@ function LayoutHandler(props) {
   return null;
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({}, dispatch);
-}
-
-function mapStateToProps() {
-  return {};
-}
 
 export default withStyles(styles, {
   withTheme: true,
-})(withRouter(connect(mapStateToProps, mapDispatchToProps)(LayoutHandler)));
+})(withRouter(LayoutHandler));

@@ -7,7 +7,7 @@ import {
   Link,
 } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
-import { useOnGet, set } from 'onget'
+import { useOnGet, set } from 'onget';
 import LoginForm from './Forms/LoginForm';
 import RegisterForm from './Forms/RegisterForm';
 import styles from './styles';

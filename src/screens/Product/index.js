@@ -27,8 +27,6 @@ import {
 } from '@material-ui/core';
 import withWidth from '@material-ui/core/withWidth';
 import { withRouter } from 'react-router-dom';
-import { bindActionCreators } from 'redux';
-import connect from 'react-redux/es/connect/connect';
 import AddIcon from '@material-ui/icons/Add';
 import SubtractIcon from '@material-ui/icons/Remove';
 import FiberManualRecord from '@material-ui/icons/FiberManualRecord';
@@ -37,7 +35,6 @@ import classNames from 'classnames';
 import { Carousel } from 'react-responsive-carousel';
 import { set } from 'onget';
 import systemConfig from '../../config/system';
-import * as productActions from '../../store/actions/product';
 import styles from './styles';
 import { Container, Section } from '../../components/Layout';
 import Review from '../../components/Review';
@@ -339,23 +336,6 @@ class Product extends Component {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return bindActionCreators({
-    getSingleProduct: productActions.getSingleProduct,
-    getProductDetails: productActions.getProductDetails,
-    getProductLocations: productActions.getProductLocations,
-  }, dispatch);
-}
-
-function mapStateToProps({ product }) {
-  return {
-    product: product.item.data,
-    locations: product.locations.data,
-    locationsLoading: product.locations.isLoading,
-    loading: product.item.isLoading,
-  };
-}
-
 export default withWidth()(withStyles(styles, {
   withTheme: true,
-})(withRouter(connect(mapStateToProps, mapDispatchToProps)(Product))));
+})(withRouter(Product)));

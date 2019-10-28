@@ -2,7 +2,6 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { renderRoutes } from 'react-router-config';
 import { withStyles } from '@material-ui/core';
-import { connect } from 'react-redux';
 import { get } from 'onget';
 import AuthDialog from '../components/AuthDialog';
 import Header from '../components/Header';
@@ -57,13 +56,6 @@ function Layout({ children }) {
   );
 }
 
-
-function mapStateToProps({ products }) {
-  return {
-    products: products.all.data.rows,
-  };
-}
-
 export default withStyles(styles, {
   withTheme: true,
-})(withRouter(connect(mapStateToProps)(Layout)));
+})(withRouter(Layout));
