@@ -1,6 +1,5 @@
-import {put, takeLatest, call} from 'redux-saga/effects';
+import { put, takeLatest, call } from 'redux-saga/effects';
 import ordersService from "../../../services/ordersService";
-import {HIDE_CART, SHOW_TOAST} from "../../actions/alerts";
 
 import {
     ADD_ORDER,
@@ -35,10 +34,6 @@ function* addOrderSaga(action) {
                 variant: 'success',
                 message: 'Order Placed Successfully!'
             }
-        });
-
-        yield put({
-            type: HIDE_CART
         });
 
     } catch (error) {
