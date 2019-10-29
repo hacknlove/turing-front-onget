@@ -7,14 +7,49 @@ import {
   Link,
 } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
-import { useOnGet, set } from 'onget';
+import { useOnGet, set, beforeSet } from 'onget';
 import LoginForm from './Forms/LoginForm';
 import RegisterForm from './Forms/RegisterForm';
 import styles from './styles';
+import systemConfig from '../../../config/system';
+
+beforeSet('dotted://user', async (context) => {
+  context.preventSet = true;
+  const url = `${systemConfig.serverBaseUrl}/customers${context.value.name ? '' : '/login'}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(context.value),
+  });
+
+  if (response.error) {
+    return set('fast://toast', {
+      variant: 'error',
+      message: 'Network error',
+    });
+  }
+
+  const data = await response.json();
+  if (data.error) {
+    return set('fast://toast', {
+      variant: 'error',
+      message: data.error.message,
+    });
+  }
+
+  context.preventSet = false;
+  context.value = data;
+  set('localStorage://auth', data.accessToken);
+  set('fast://authVisible', false);
+});
 
 function PaperComponent(props) {
   return (
-    <Paper {...props}
+    <Paper
+      {...props}
       style={{
         width: 'auto',
         maxWidth: '450px',
@@ -48,42 +83,36 @@ function AuthDialog({ classes }) {
         maxWidth="lg"
         aria-labelledby="draggable-dialog-title"
       >
-        <DialogContent style={{overflow: 'hidden'}}>
+        <DialogContent style={{ overflow: 'hidden' }}>
           <div className="flex mb-4 h-8">
             <div className="w-3/4">
-              {register &&
-                <span className={classes.titleText}>Register / Sign Up</span>
-              }
-              {!register &&
-                <span className={classes.titleText}>Log In</span>
+              {
+                register
+                  ? <span className={classes.titleText}>Register / Sign Up</span>
+                  : <span className={classes.titleText}>Log In</span>
               }
             </div>
             <div className="w-1/4 flex justify-end">
-              <Close onClick={handleClose} style={{cursor: 'pointer'}} />
+              <Close onClick={handleClose} style={{ cursor: 'pointer' }} />
             </div>
           </div>
           <div className="w-full flex flex-grow flex-col">
-            {register ? <RegisterForm/> : <LoginForm/>}
+            {register ? <RegisterForm /> : <LoginForm />}
           </div>
           <div>
             <div className="w-full flex justify-center">
-              {register && <Link color="primary"
-                        className={classes.submitButtonText}
-                        onClick={handleLoginNav}
-                        style={{color: 'red'}}
-              >
-                Go to Login</Link>}
-            </div>
-            <div className="w-full flex justify-center">
-              {!register &&
-                <Link color="primary"
+              <Link
+                color="primary"
                 className={classes.submitButtonText}
-                onClick={handleRegisterNav}
-                style={{color: 'red', marginLeft: '3px'}}
-                >
-                Register / Sign Up
-                </Link>
-              }
+                onClick={register ? handleLoginNav : handleRegisterNav}
+                style={{ color: 'red' }}
+              >
+                {
+                  register
+                    ? 'Go to Login'
+                    : 'Register / Sign Up'
+                }
+              </Link>
             </div>
           </div>
         </DialogContent>

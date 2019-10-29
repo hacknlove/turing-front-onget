@@ -37,25 +37,25 @@ const variantIcon = {
   info: <Info />,
 };
 
-function Toast({ classes, options }) {
-  const state = useOnGet('fast://toastVisible', { first: false });
-  if (!state) {
+function Toast({ classes }) {
+  const toast = useOnGet('fast://toast');
+  if (!toast) {
     return null;
   }
   return (
     <Snackbar
-      open={state}
-      onClose={() => set('fast://toastVisible', false)}
+      open
+      onClose={() => set('fast://toast', false)}
       autoHideDuration={3000}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       TransitionComponent={(props) => (<Slide {...props} direction="down" />)}
     >
       <SnackbarContent
-        className={classNames(classes[options.variant])}
+        className={classNames(classes[toast.variant])}
         message={(
           <div className="flex items-center">
-            {variantIcon[options.variant] && variantIcon[options.variant]}
-            <span className="pl-2">{options.message}</span>
+            {variantIcon[toast.variant] && variantIcon[toast.variant]}
+            <span className="pl-2">{toast.message}</span>
           </div>
         )}
         action={[
@@ -63,7 +63,7 @@ function Toast({ classes, options }) {
             key="close"
             aria-label="Close"
             color="inherit"
-            onClick={() => set('fast://toastVisible', false)}
+            onClick={() => set('fast://toast', false)}
           >
             <Close />
           </IconButton>,

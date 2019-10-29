@@ -5,7 +5,7 @@ import {
 } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar/index';
 import Toolbar from '@material-ui/core/Toolbar/index';
-import { set } from 'onget'
+import { set, useOnGet } from 'onget'
 import styles from './styles';
 
 const links = [{
@@ -20,6 +20,14 @@ const links = [{
 }];
 
 function TopBar({ classes }) {
+  const user = useOnGet('dotted://user');
+  const cart = useOnGet('dotted://cart', {
+    first: {
+      count: 0,
+      total: 0,
+    },
+  });
+
   return (
     <AppBar className={classes.topBar}>
       <Toolbar className={classes.toolbar}>
@@ -40,7 +48,7 @@ function TopBar({ classes }) {
           <Link
             onClick={() => {
               set('fast://authVisible', true);
-              set('fast://authMode', false);
+              set('fast://authMode', true);
             }}
             className={classes.authLink}
             id="btnRegister"
@@ -49,21 +57,29 @@ function TopBar({ classes }) {
             Register
           </Link>
         </div>
-        <div className={`${classes.authText} ${classes.divTopBar}`}>
-          <span>Hi Charles!</span>
-          <Link className={classes.authLink} style={{ color: 'red' }}>
-            My Profile
-          </Link>
-          <span>|</span>
-          <Link className={classes.authLink} id="btnLogout" style={{ color: 'red' }}>
-            Logout
-          </Link>
-        </div>
+        {
+          user && (
+            <div className={`${classes.authText} ${classes.divTopBar}`}>
+              <span>
+                Hi
+                {user.username}
+                !
+              </span>
+              <Link className={classes.authLink} style={{ color: 'red' }}>
+                My Profile
+              </Link>
+              <span>|</span>
+              <Link onClick={() => set('fast://user', undefined)} className={classes.authLink} id="btnLogout" style={{ color: 'red' }}>
+                Logout
+              </Link>
+            </div>
+          )
+        }
         <Hidden mdDown className={classes.divTopBar}>
           <div className={classes.linksContainer}>
             {
               links.map((item) => (
-                <Button key={item.link} classes={{ root: classes.button }}>
+                <Button key={item.title} classes={{ root: classes.button }}>
                   <Link to={item.link} className={classes.navLink}>
                     {item.title}
                   </Link>
@@ -80,25 +96,29 @@ function TopBar({ classes }) {
             <div className={classes.currencyText}>GBR</div>
           </div>
         </Hidden>
-        <div className={classes.divTopBar}>
-          <div
-            className={classes.iconContainer}
-            id="menuCartLink"
-            onClick={() => set('fast://cartVisible', true)}
-          >
-            <Badge
-              classes={{ badge: classes.badge }}
-              badgeContent={1}
-              color="primary"
-            >
-              <img alt="Shopping Cart Icon" src="/assets/icons/shopping-cart-black.svg"/>
-            </Badge>
-          </div>
-          <div className={classes.yourBag} style={{ color: 'black' }}>
-            xYour Bag: $
-            <span id="menuCartTotalPrice">14.99</span>
-          </div>
-        </div>
+        {
+          cart.count && (
+            <div className={classes.divTopBar}>
+              <div
+                className={classes.iconContainer}
+                id="menuCartLink"
+                onClick={() => set('fast://cartVisible', true)}
+              >
+                <Badge
+                  classes={{ badge: classes.badge }}
+                  badgeContent={cart.count}
+                  color="primary"
+                >
+                  <img alt="Shopping Cart Icon" src="/assets/icons/shopping-cart-black.svg"/>
+                </Badge>
+              </div>
+              <div className={classes.yourBag} style={{ color: 'black' }}>
+                Your Bag: $
+                <span id="menuCartTotalPrice">{cart.total}</span>
+              </div>
+            </div>
+          )
+        }
       </Toolbar>
     </AppBar>
   );
