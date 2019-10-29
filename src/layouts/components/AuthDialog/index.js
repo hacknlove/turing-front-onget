@@ -7,14 +7,21 @@ import {
   Link,
 } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
-import { useOnGet, set, beforeSet } from 'onget';
+import {
+  useOnGet, set, beforeSet, afterSet,
+} from 'onget';
 import LoginForm from './Forms/LoginForm';
 import RegisterForm from './Forms/RegisterForm';
 import styles from './styles';
 import systemConfig from '../../../config/system';
 
-beforeSet('dotted://user', async (context) => {
-  context.preventSet = true;
+beforeSet('dotted://user', (context) => {
+  if (context.value === false) {
+    set('localStorage://auth', undefined);
+    context.preventHooks = true;
+  }
+});
+afterSet('dotted://user', async (context) => {
   const url = `${systemConfig.serverBaseUrl}/customers${context.value.name ? '' : '/login'}`;
 
   const response = await fetch(url, {
@@ -44,6 +51,7 @@ beforeSet('dotted://user', async (context) => {
   context.value = data;
   set('localStorage://auth', data.accessToken);
   set('fast://authVisible', false);
+  set('dotted://user', data.customer, { preventHooks: true });
 });
 
 function PaperComponent(props) {
