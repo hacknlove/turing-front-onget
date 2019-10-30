@@ -18,7 +18,7 @@
  NB: YOU CAN STYLE AND CUSTOMISE THIS PAGE, BUT YOU HAVE TO USE OUR DEFAULT CLASSNAME, IDS AND HTML
   INPUT NAMES
 */
-import React from 'react';
+import React, { useState } from 'react';
 import {
   withStyles,
   Radio,
@@ -56,6 +56,10 @@ function Product({ classes, match: { params } }) {
       isLoading: true,
     },
   });
+
+  const [quantity, setquantity] = useState(0);
+  const [size, setsize] = useState('M');
+  const [color, setcolor] = useState('M');
 
   const isLoading = product.isLoading || details.isLoading || locations.isLoading;
 
@@ -150,6 +154,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="blue"
+                      checked={color === 'blue'}
+                      onClick={() => setcolor('blue')}
                       name="radio-button-demo"
                       aria-label="blue"
                       className="product-details-color"
@@ -159,6 +165,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="cyan"
+                      checked={color === 'cyan'}
+                      onClick={() => setcolor('cyan')}
                       name="radio-button-demo"
                       aria-label="cyan"
                       className="product-details-color"
@@ -168,6 +176,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="red"
+                      checked={color === 'red'}
+                      onClick={() => setcolor('red')}
                       name="radio-button-demo"
                       aria-label="red"
                       className="product-details-color"
@@ -177,6 +187,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="orange"
+                      checked={color === 'orange'}
+                      onClick={() => setcolor('orange')}
                       name="radio-button-demo"
                       aria-label="orange"
                       className="product-details-color"
@@ -186,6 +198,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="yellow"
+                      checked={color === 'yellow'}
+                      onClick={() => setcolor('yellow')}
                       name="radio-button-demo"
                       aria-label="yellow"
                       className="product-details-color"
@@ -195,6 +209,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="green"
+                      checked={color === 'green'}
+                      onClick={() => setcolor('green')}
                       name="radio-button-demo"
                       aria-label="green"
                       className="product-details-color"
@@ -204,6 +220,8 @@ function Product({ classes, match: { params } }) {
                       size="small"
                       icon={<FiberManualRecord />}
                       value="purple"
+                      checked={color === 'purple'}
+                      onClick={() => setcolor('purple')}
                       name="radio-button-demo"
                       aria-label="purple"
                       className="product-details-color"
@@ -221,13 +239,17 @@ function Product({ classes, match: { params } }) {
                       icon={<div className={classes.sizeCheckboxUnchecked}>XS</div>}
                       className="product-details-size"
                       value="XS"
+                      checked={size === 'XS'}
+                      onClick={() => setsize('XS')}
                     />
                     <Checkbox
                       style={{ padding: 0 }}
                       checkedIcon={<div className={classes.sizeCheckboxChecked}>S</div>}
                       icon={<div className={classes.sizeCheckboxUnchecked}>S</div>}
                       className="product-details-size"
-                      value="checkedA"
+                      value="S"
+                      checked={size === 'S'}
+                      onClick={() => setsize('S')}
                     />
                     <Checkbox
                       style={{ padding: 0 }}
@@ -235,6 +257,8 @@ function Product({ classes, match: { params } }) {
                       icon={<div className={classes.sizeCheckboxUnchecked}>M</div>}
                       className="product-details-size"
                       value="M"
+                      checked={size === 'M'}
+                      onClick={() => setsize('M')}
                     />
                     <Checkbox
                       style={{ padding: 0 }}
@@ -242,6 +266,8 @@ function Product({ classes, match: { params } }) {
                       icon={<div className={classes.sizeCheckboxUnchecked}>L</div>}
                       className="product-details-size"
                       value="L"
+                      checked={size === 'L'}
+                      onClick={() => setsize('L')}
                     />
                     <Checkbox
                       style={{ padding: 0 }}
@@ -249,6 +275,8 @@ function Product({ classes, match: { params } }) {
                       icon={<div className={classes.sizeCheckboxUnchecked}>XL</div>}
                       className="product-details-size"
                       value="XL"
+                      checked={size === 'XL'}
+                      onClick={() => setsize('XL')}
                     />
                   </div>
                 </div>
@@ -257,19 +285,21 @@ function Product({ classes, match: { params } }) {
                     size="small"
                     aria-label="Subtract"
                     className={classes.addRemoveIcon}
+                    onClick={() => { setquantity(Math.max(0, quantity - 1)); }}
                   >
                     <SubtractIcon />
                   </Fab>
                   <div
                     className="shadow appearance-none border rounded w-16 text-gray-700 rounded-full text-center mx-2"
                   >
-                    <span className={classes.addRemoveText} name="product-details-quantity">2</span>
+                    <span className={classes.addRemoveText} name="product-details-quantity">{quantity}</span>
                   </div>
 
                   <Fab
                     size="small"
                     aria-label="Add"
                     className={`increase-quantity ${classes.addRemoveIcon}`}
+                    onClick={() => { setquantity(quantity + 1); }}
                   >
                     <AddIcon />
                   </Fab>
