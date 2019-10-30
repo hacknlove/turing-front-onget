@@ -7,52 +7,10 @@ import {
   Link,
 } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
-import {
-  useOnGet, set, beforeSet, afterSet,
-} from 'onget';
+import { useOnGet, set } from 'onget';
 import LoginForm from './Forms/LoginForm';
 import RegisterForm from './Forms/RegisterForm';
 import styles from './styles';
-import systemConfig from '../../../config/system';
-
-beforeSet('dotted://user', (context) => {
-  if (context.value === false) {
-    set('localStorage://auth', undefined);
-    context.preventHooks = true;
-  }
-});
-afterSet('dotted://user', async (context) => {
-  const url = `${systemConfig.serverBaseUrl}/customers${context.value.name ? '' : '/login'}`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(context.value),
-  });
-
-  if (response.error) {
-    return set('fast://toast', {
-      variant: 'error',
-      message: 'Network error',
-    });
-  }
-
-  const data = await response.json();
-  if (data.error) {
-    return set('fast://toast', {
-      variant: 'error',
-      message: data.error.message,
-    });
-  }
-
-  context.preventSet = false;
-  context.value = data;
-  set('localStorage://auth', data.accessToken);
-  set('fast://authVisible', false);
-  set('dotted://user', data.customer, { preventHooks: true });
-});
 
 function PaperComponent(props) {
   return (
@@ -69,14 +27,6 @@ function PaperComponent(props) {
 
 function handleClose() {
   set('fast://authVisible', false);
-}
-
-function handleRegisterNav() {
-  set('fast://authMode', true);
-}
-
-function handleLoginNav() {
-  set('fast://authMode', false);
 }
 
 function AuthDialog({ classes }) {
@@ -112,7 +62,7 @@ function AuthDialog({ classes }) {
               <Link
                 color="primary"
                 className={classes.submitButtonText}
-                onClick={register ? handleLoginNav : handleRegisterNav}
+                onClick={() => set('fast://authMode', !register)}
                 style={{ color: 'red' }}
               >
                 {
