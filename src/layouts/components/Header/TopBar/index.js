@@ -20,7 +20,7 @@ const links = [{
 }];
 
 function TopBar({ classes }) {
-  const user = useOnGet('dotted://user');
+  const user = useOnGet('localStorage://auth');
   const cart = useOnGet('dotted://cart', {
     first: {
       count: 0,
@@ -37,15 +37,15 @@ function TopBar({ classes }) {
               ? (
                 <>
                   <span>
-                    Hi
-                    {user.username}
+                    Hi&nbsp;
+                    {user.customer.name}
                     !
                   </span>
                   <Link className={classes.authLink} style={{ color: 'red' }}>
                     My Profile
                   </Link>
                   <span>|</span>
-                  <Link onClick={() => set('dotted://user', false)} className={classes.authLink} id="btnLogout" style={{ color: 'red' }}>
+                  <Link onClick={() => set('localStorage://auth', false)} className={classes.authLink} id="btnLogout" style={{ color: 'red' }}>
                     Logout
                   </Link>
                 </>

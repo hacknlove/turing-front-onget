@@ -15,7 +15,7 @@ function RegisterForm() {
   return (
     <div className="w-full flex flex-row justify-center">
       <Formsy
-        onSubmit={(data) => set('dotted://user', data)}
+        onSubmit={(data) => set('localStorage://auth', data)}
         onValid={() => setdisabled(false)}
         onInvalid={() => setdisabled(true)}
         className="bg-white shadow-md rounded px-8 pt-6 mt-6 pb-8 mb-4"

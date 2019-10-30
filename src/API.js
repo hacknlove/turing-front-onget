@@ -22,11 +22,11 @@ function addAuthorization(context) {
 beforeRefresh(`${systemConfig.serverBaseUrl}/customers`, addAuthorization);
 
 
-beforeSet('dotted://user', async (context) => {
-  context.preventSet = true;
+beforeSet('localStorage://auth', async (context) => {
   if (!context.value) {
-    return set('localStorage://auth', false);
+    return;
   }
+  context.preventSet = true;
   const url = `${systemConfig.serverBaseUrl}/customers${context.value.name ? '' : '/login'}`;
 
   const response = await fetch(url, {
@@ -38,22 +38,24 @@ beforeSet('dotted://user', async (context) => {
   });
 
   if (response.error) {
-    return set('fast://toast', {
+    set('fast://toast', {
       variant: 'error',
       message: 'Network error',
     });
+    return;
   }
 
   const data = await response.json();
   if (data.error) {
-    return set('fast://toast', {
+    set('fast://toast', {
       variant: 'error',
       message: data.error.message,
     });
+    return;
   }
 
   context.preventSet = false;
   context.value = data;
-  set('localStorage://auth', data.accessToken);
+  set('localStorage://auth', data, { preventHooks: true });
   set('fast://authVisible', false);
 });
