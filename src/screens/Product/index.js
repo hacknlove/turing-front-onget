@@ -15,7 +15,7 @@
  - Add functionality to select product size, color and item quantity
  - Take initiatives to customize this component and add live to the page
 
- NB: YOU CAN STYLE AND CUSTOMISE THIS PAGE, BUT YOU HAVE TO USE OUR DEFAULT CLASSNAME, IDS AND HTML
+ NB: YOU CAN STYLE AND CUSTOMIZE THIS PAGE, BUT YOU HAVE TO USE OUR DEFAULT CLASSNAME, IDS AND HTML
   INPUT NAMES
 */
 import React, { useState } from 'react';
@@ -46,22 +46,25 @@ function Product({ classes, match: { params } }) {
       isLoading: true,
     },
   });
-  const details = useOnGet(`${systemConfig.serverBaseUrl}/products/${params.id}/details`, {
-    first: {
-      isLoading: true,
-    },
-  });
   const locations = useOnGet(`${systemConfig.serverBaseUrl}/products/${params.id}/locations`, {
     first: {
       isLoading: true,
     },
   });
+  const attributes = useOnGet(`${systemConfig.serverBaseUrl}/attributes/inProduct/${params.id}`, {
+    first: [],
+  });
+  const reviews = useOnGet(`${systemConfig.serverBaseUrl}/products/${params.id}/reviews`, {
+    first: [{ rating: 0 }],
+  });
 
+  console.log(reviews);
+  const user = useOnGet('localStorage://auth');
   const [quantity, setquantity] = useState(0);
   const [size, setsize] = useState('M');
   const [color, setcolor] = useState('M');
 
-  const isLoading = product.isLoading || details.isLoading || locations.isLoading;
+  const isLoading = product.isLoading || locations.isLoading;
 
   if (isLoading) {
     return (
@@ -76,6 +79,8 @@ function Product({ classes, match: { params } }) {
       </div>
     );
   }
+
+  const rating = reviews.reduce((rate, review) => rate + review.rating, 0) / reviews.length;
 
   const isDiscounted = parseFloat(product.discounted_price) > 0;
 
@@ -111,7 +116,7 @@ function Product({ classes, match: { params } }) {
                 </div>
                 <div className="w-full h-8 mt-2">
                   <StarRatings
-                    rating={3}
+                    rating={rating}
                     starRatedColor="#ffc94f"
                     starEmptyColor="#eeeeee"
                     starHoverColor="#ffc94f"
@@ -144,88 +149,27 @@ function Product({ classes, match: { params } }) {
                     )}
                   </span>
                 </div>
-                <div className="w-full my-8">
+                <div id="ReviewsScrollAnchor" className="w-full my-8">
                   <div className="w-full mb-2">
                     <span className={classes.lightTitle}> Colour </span>
                   </div>
                   <div>
-                    <Radio
-                      style={{ padding: 2, color: '#6eb2fb' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="blue"
-                      checked={color === 'blue'}
-                      onClick={() => setcolor('blue')}
-                      name="radio-button-demo"
-                      aria-label="blue"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#00d3ca' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="cyan"
-                      checked={color === 'cyan'}
-                      onClick={() => setcolor('cyan')}
-                      name="radio-button-demo"
-                      aria-label="cyan"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#f62f5e' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="red"
-                      checked={color === 'red'}
-                      onClick={() => setcolor('red')}
-                      name="radio-button-demo"
-                      aria-label="red"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#fe5c07' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="orange"
-                      checked={color === 'orange'}
-                      onClick={() => setcolor('orange')}
-                      name="radio-button-demo"
-                      aria-label="orange"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#f8e71c' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="yellow"
-                      checked={color === 'yellow'}
-                      onClick={() => setcolor('yellow')}
-                      name="radio-button-demo"
-                      aria-label="yellow"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#7ed321' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="green"
-                      checked={color === 'green'}
-                      onClick={() => setcolor('green')}
-                      name="radio-button-demo"
-                      aria-label="green"
-                      className="product-details-color"
-                    />
-                    <Radio
-                      style={{ padding: 2, color: '#9013fe' }}
-                      size="small"
-                      icon={<FiberManualRecord />}
-                      value="purple"
-                      checked={color === 'purple'}
-                      onClick={() => setcolor('purple')}
-                      name="radio-button-demo"
-                      aria-label="purple"
-                      className="product-details-color"
-                    />
+                    {
+                      attributes.filter((a) => a.attribute_name === 'Color').map((c) => (
+                        <Radio
+                          key={c.attribute_value_id}
+                          style={{ padding: 2, color: c.attribute_value, filter: 'drop-shadow(0px 0px 4px #ccc)' }}
+                          size="small"
+                          icon={<FiberManualRecord />}
+                          value={c.attribute_value}
+                          checked={color === c.attribute_value}
+                          onClick={() => setcolor(c.attribute_value)}
+                          name="radio-button-demo"
+                          aria-label={c.attribute_value}
+                          className="product-details-color"
+                        />
+                      ))
+                    }
                   </div>
                 </div>
                 <div className="w-full my-8">
@@ -233,51 +177,24 @@ function Product({ classes, match: { params } }) {
                     <span className={classes.lightTitle}> Size </span>
                   </div>
                   <div>
-                    <Checkbox
-                      style={{ padding: 0 }}
-                      checkedIcon={<div className={classes.sizeCheckboxChecked}>XS</div>}
-                      icon={<div className={classes.sizeCheckboxUnchecked}>XS</div>}
-                      className="product-details-size"
-                      value="XS"
-                      checked={size === 'XS'}
-                      onClick={() => setsize('XS')}
-                    />
-                    <Checkbox
-                      style={{ padding: 0 }}
-                      checkedIcon={<div className={classes.sizeCheckboxChecked}>S</div>}
-                      icon={<div className={classes.sizeCheckboxUnchecked}>S</div>}
-                      className="product-details-size"
-                      value="S"
-                      checked={size === 'S'}
-                      onClick={() => setsize('S')}
-                    />
-                    <Checkbox
-                      style={{ padding: 0 }}
-                      checkedIcon={<div className={classes.sizeCheckboxChecked}>M</div>}
-                      icon={<div className={classes.sizeCheckboxUnchecked}>M</div>}
-                      className="product-details-size"
-                      value="M"
-                      checked={size === 'M'}
-                      onClick={() => setsize('M')}
-                    />
-                    <Checkbox
-                      style={{ padding: 0 }}
-                      checkedIcon={<div className={classes.sizeCheckboxChecked}>L</div>}
-                      icon={<div className={classes.sizeCheckboxUnchecked}>L</div>}
-                      className="product-details-size"
-                      value="L"
-                      checked={size === 'L'}
-                      onClick={() => setsize('L')}
-                    />
-                    <Checkbox
-                      style={{ padding: 0 }}
-                      checkedIcon={<div className={classes.sizeCheckboxChecked}>XL</div>}
-                      icon={<div className={classes.sizeCheckboxUnchecked}>XL</div>}
-                      className="product-details-size"
-                      value="XL"
-                      checked={size === 'XL'}
-                      onClick={() => setsize('XL')}
-                    />
+                    {
+                      attributes.filter((a) => a.attribute_name === 'Size').map((s) => (
+                        <Checkbox
+                          key={s.attribute_value_id}
+                          style={{ padding: 0 }}
+                          checkedIcon={
+                            <div className={classes.sizeCheckboxChecked}>{s.attribute_value}</div>
+                          }
+                          icon={
+                            <div className={classes.sizeCheckboxUnchecked}>{s.attribute_value}</div>
+                          }
+                          className="product-details-size"
+                          value={s.attribute_value}
+                          checked={size === s.attribute_value}
+                          onClick={() => setsize(s.attribute_value)}
+                        />
+                      ))
+                    }
                   </div>
                 </div>
                 <div className="w-full my-8 flex flex-row">
@@ -328,25 +245,33 @@ function Product({ classes, match: { params } }) {
                       Product Reviews
                     </span>
                   </div>
-                  <Review rating={5} name="Peter Test" review="Test Review 1" />
-                  <Review rating={3} name="Celestine Test" review="Test Review 2" />
+                  {reviews.map((review) => (
+                    <Review key={JSON.stringify(review)} {...review} />
+                  ))}
                 </div>
               </Section>
             </Hidden>
-            <ReviewForm productId={params.id} />
-          </div>
-          <div className="w-full flex justify-center align-middle py-8">
-            <Link
-              onClick={() => {
-                set('fast://authVisible', true);
-                set('fast://authMode', false);
-              }}
-              color="primary"
-              style={{ cursor: 'pointer', color: 'red' }}
-            >
-              Log In
-            </Link>
-            <span className="ml-2">to Add a Review.</span>
+            {
+            user
+              ? (
+                <ReviewForm productId={params.id} />
+              )
+              : (
+                <div className="w-full flex justify-center align-middle py-8">
+                  <Link
+                    onClick={() => {
+                      set('fast://authVisible', true);
+                      set('fast://authMode', false);
+                    }}
+                    color="primary"
+                    style={{ cursor: 'pointer', color: 'red' }}
+                  >
+                    Log In
+                  </Link>
+                  <span className="ml-2">to Add a Review.</span>
+                </div>
+              )
+            }
           </div>
         </div>
       </Container>

@@ -17,7 +17,7 @@
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
     "material-ui-slider": "^3.0.0",
-    "onget": "^2.1.1",
+    "onget": "git+https://github.com/hacknlove/onGet.git#dev",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.0-beta.9",
