@@ -5,7 +5,7 @@ import {
 } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar/index';
 import Toolbar from '@material-ui/core/Toolbar/index';
-import { set, useOnGet } from 'onget'
+import { set, useOnGet } from 'onget';
 import styles from './styles';
 
 const links = [{

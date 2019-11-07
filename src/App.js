@@ -1,11 +1,10 @@
 import React from 'react';
 import { createGenerateClassName, jssPreset } from '@material-ui/core';
-import { Router } from 'react-router-dom';
-import JssProvider from 'react-jss/lib/JssProvider';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { JssProvider } from 'react-jss';
 import { create } from 'jss';
 import jssExtend from 'jss-extend';
 import './config/routes';
-import history from './history';
 import Theme from './components/System/Theme';
 import LayoutHandler from './layouts/LayoutHandler';
 import './styles/index.css';
@@ -21,7 +20,7 @@ const generateClassName = createGenerateClassName();
 function App() {
   return (
     <JssProvider jss={jss} generateClassName={generateClassName}>
-      <Router history={history}>
+      <Router>
         <Theme>
           <LayoutHandler />
         </Theme>

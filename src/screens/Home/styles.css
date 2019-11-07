@@ -19,3 +19,16 @@
       display: block !important;
   }
 }
+
+.paginate {
+    width: 100%;
+}
+.paginate>ul{
+    display: flex;
+}
+.paginate>ul>li{
+    margin: 0 1rem;
+}
+.paginate>ul>li.selected{
+    text-decoration: underline;
+}

@@ -19,11 +19,13 @@ import {
   Button,
   Fab,
   TextField,
+  Slider
 } from '@material-ui/core';
-import { useOnGet, set } from 'onget';
-import { Slider } from 'material-ui-slider';
+import ReactPaginate from 'react-paginate';
+import { useOnGet, set, refresh } from 'onget';
+import QueryString from 'query-string';
 import withWidth from '@material-ui/core/withWidth';
-import { withRouter } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import FiberManualRecord from '@material-ui/icons/FiberManualRecord';
 import Close from '@material-ui/icons/Close';
 import styles from './styles';
@@ -34,32 +36,26 @@ import SubscribeBar from '../../components/SubscribeBar';
 import './styles.css';
 import systemConfig from '../../config/system';
 
+const defaultFilters = {
+  size: '',
+  color: '',
+  range: [10, 25],
+  keywords: '',
+};
 
-function Filter({ classes }) {
-  const editFilter = useOnGet('dotted://editFilter', {
-    first: {
-      size: '',
-      color: '',
-      range: [1, 500],
-      keywords: '',
-    },
-  });
-  const sizes = useOnGet(`${systemConfig.serverBaseUrl}/attributes/values/1`, {
-    first: [],
-  });
-  const colors = useOnGet(`${systemConfig.serverBaseUrl}/attributes/values/2`, {
-    first: [],
-  });
+function Filter({ classes, url }) {
+  const departments = useOnGet(`${systemConfig.serverBaseUrl}/departments`, { first: [] });
+  const categories = useOnGet(`${systemConfig.serverBaseUrl}/categories`, { first: { rows: [] } });
+  const sizes = useOnGet(`${systemConfig.serverBaseUrl}/attributes/values/1`, { first: [] });
+  const colors = useOnGet(`${systemConfig.serverBaseUrl}/attributes/values/2`, { first: [] });
+  const editFilter = useOnGet('dotted://editFilter', { first: defaultFilters });
+  const { category_id, department_id } = useParams();
+
+  const department = departments.find((d) => department_id * 1 === d.department_id) || {};
+  const category = categories.rows.find((c) => category_id * 1 === c.category_id) || {};
 
   function reseteditFilters() {
-    set('dotted://editFilter', {
-      first: {
-        size: '',
-        color: '',
-        range: [1, 500],
-        keywords: '',
-      },
-    });
+    set('dotted://editFilter', defaultFilters);
   }
 
   return (
@@ -72,14 +68,18 @@ function Filter({ classes }) {
             </span>
           </div>
           <div className={classes.filterItems}>
-            <div className="py-1">
-              <span className={classes.isGrey}>Category: </span>
-              <span>Regional</span>
-            </div>
-            <div className="py-1 pb-2">
-              <span className={classes.isGrey}>Department: </span>
-              <span>French</span>
-            </div>
+            {category.name && (
+              <div className="py-1">
+                <span className={classes.isGrey}>Category: </span>
+                <span>{category.name}</span>
+              </div>
+            )}
+            {department.name && (
+              <div className="py-1 pb-2">
+                <span className={classes.isGrey}>Department: </span>
+                <span>{department.name}</span>
+              </div>
+            )}
           </div>
         </div>
         <div className={classes.filterBodyContainer}>
@@ -97,9 +97,9 @@ function Filter({ classes }) {
                     style={{ padding: 0, color: color.value, filter: 'drop-shadow(0px 0px 4px #ccc)' }}
                     size="small"
                     icon={<FiberManualRecord />}
-                    value={color.value}
-                    checked={editFilter.color === color.value}
-                    onClick={() => set('dotted://editFilter.color', color.value)}
+                    value={color.attribute_value_id}
+                    checked={editFilter.color === color.attribute_value_id}
+                    onClick={() => set('dotted://editFilter.color', color.attribute_value_id)}
                     name="radio-button-demo"
                     aria-label={color.value}
                     className="product-details-color"
@@ -121,9 +121,9 @@ function Filter({ classes }) {
                   style={{ padding: 0 }}
                   checkedIcon={<div className={classes.sizeCheckboxChecked}>{size.value}</div>}
                   icon={<div className={classes.sizeCheckboxUnchecked}>{size.value}</div>}
-                  value={size.value}
-                  checked={editFilter.size === size.value}
-                  onClick={() => set('dotted://editFilter.size', size.value)}
+                  value={size.attribute_value_id}
+                  checked={editFilter.size === size.attribute_value_id}
+                  onClick={() => set('dotted://editFilter.size', size.attribute_value_id)}
                 />
               ))}
             </div>
@@ -137,13 +137,14 @@ function Filter({ classes }) {
             <div className={classes.sliderContainer}>
               <Slider
                 valueLabelDisplay="auto"
-                color="#f62f5e"
+                aria-labelledby="range-slider"
+                valueLabelFormat={(v) => `£${v}`}
+                color="primary"
                 defaultValue={editFilter.range}
                 value={editFilter.range}
-                min={1}
-                max={500}
-                range
-                onChange={(e) => { set('dotted://editFilter.range', e); }}
+                min={10}
+                max={25}
+                onChange={(event, newValue) => { set('dotted://editFilter.range', newValue); }}
               />
             </div>
             <div
@@ -176,7 +177,7 @@ function Filter({ classes }) {
                 inputProps={{
                   className: classes.filterSearchInput,
                 }}
-                onChange={(e) => { set('dotted://editFilter.keywords', e.value); }}
+                onChange={(e) => set('dotted://editFilter.keywords', e.target.value)}
                 placeholder="Enter a keyword to search..."
                 margin="dense"
                 variant="outlined"
@@ -191,7 +192,10 @@ function Filter({ classes }) {
             size="small"
             className={classes.coloredButton}
             style={{ borderRadius: 24, height: 35, width: 90 }}
-            onClick={() => set('fast://applyFilter', editFilter)}
+            onClick={() => {
+              set('fast://filter', editFilter);
+              refresh(url);
+            }}
           >
             <span
               className={classes.submitButtonText}
@@ -212,38 +216,95 @@ function Filter({ classes }) {
   );
 }
 
-function Home({ classes }) {
-  const { page, limit, description_length } = useOnGet('fast://pagination', {
-    first: {
-      page: 1,
-      limit: 10,
-      description_length: 120,
-    },
+function makeURL({
+  category_id,
+  department_id,
+  page = 1,
+  q,
+}) {
+  if (q) {
+    return `${systemConfig.serverBaseUrl}/products/search?query_string=${q}&page=${page}`;
+  }
+  if (category_id) {
+    return `${systemConfig.serverBaseUrl}/products/inCategory/${category_id}?page=${page}`;
+  }
+  if (department_id) {
+    return `${systemConfig.serverBaseUrl}/products/inDepartment/${department_id}?page=${page}`;
+  }
+  return `${systemConfig.serverBaseUrl}/products?page=${page}`;
+}
+
+function useAPI() {
+  const { category_id, department_id } = useParams();
+  const history = useHistory();
+  const { q, page } = QueryString.parse(history.location.search);
+
+  const url = makeURL({
+    category_id,
+    department_id,
+    page,
+    q,
   });
 
-  const applyFilter = useOnGet('fast://applyFilter');
-
-  const response = useOnGet(`${systemConfig.serverBaseUrl}/products?page=${page}&limit=${limit}&description_length=${description_length}`, {
+  const response = useOnGet(url, {
     first: {
+      count: 0,
       rows: [],
     },
   });
 
+  return {
+    url,
+    total: response.count,
+    products: response.rows,
+  };
+}
 
-  const currentProducts = response.rows;
+function Home({ classes }) {
+  const history = useHistory();
+  const { page = 1 } = QueryString.parse(history.location.search);
+  const { limit } = useOnGet('fast://pagination');
+
+  const { url, total, products } = useAPI();
+
+  function pageChange({ selected }) {
+    window.scrollTo(0, 0);
+    const search = QueryString.parse(history.location.search);
+    if (selected) {
+      search.page = selected + 1;
+    } else {
+      delete search.page;
+    }
+    history.push({
+      search: QueryString.stringify(search),
+    });
+  }
 
   return (
     <div className={classes.root}>
       <Container>
         <Section>
           <div className="flex mb-4 contentHolder">
-            <Filter classes={classes} />
+            <Filter classes={classes} url={url} />
             <div className="w-3/4 flex flex-wrap ml-6 productsSection">
-              {currentProducts.map((product) => (
+              {products.map((product) => (
                 <div key={product.product_id} className="w-full sm:w-1/2 md:w-1/2 lg:w-1/2 xl:w-1/3 mb-4">
                   <ListProduct product={product} />
                 </div>
               ))}
+              {
+                total / limit < 2 || (
+                <div className="paginate">
+                  <ReactPaginate
+                    pageCount={total / limit}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={5}
+                    initialPage={page - 1}
+                    onPageChange={pageChange}
+                  />
+                </div>
+                )
+              }
             </div>
           </div>
         </Section>
@@ -256,10 +317,11 @@ function Home({ classes }) {
       </Container>
     </div>
   );
+  /**/
 }
 
 export default withWidth()(
   withStyles(styles, {
     withTheme: true,
-  })(withRouter(Home)),
+  })(Home),
 );

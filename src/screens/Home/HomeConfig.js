@@ -12,6 +12,9 @@ const HomeConfig = {
   exact: true,
   routes: [
     {
+      path: '/search/:queryString',
+      component: Home,
+    },    {
       path: '/department/:department_id?/category/:category_id?',
       component: Home,
     },

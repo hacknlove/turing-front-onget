@@ -1,26 +1,60 @@
 import React, { useState, useEffect } from 'react';
+import _ from 'lodash';
 import {
-  withStyles, InputBase, Badge, Drawer, Hidden, IconButton, Button, Toolbar, AppBar,
+  InputBase, Badge, Drawer, Hidden, IconButton, Button, Toolbar, AppBar,
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import Menu from '@material-ui/icons/Menu';
+import { makeStyles } from '@material-ui/styles';
 import {
   NavDropdown,
 } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import QueryString from 'query-string';
 import { set, useOnGet } from 'onget';
 import styles from './styles';
 import './style.css';
+import systemConfig from '../../../../config/system';
 
-function NavBar({ classes }) {
+const useStyles = makeStyles(styles, { withTheme: true });
+
+const search = _.debounce((history, q) => {
+  history.push(
+    q
+      ? {
+        pathname: '/search',
+        search: QueryString.stringify({
+          q,
+        }),
+      }
+      : {
+        pathname: '/',
+        search: '',
+      },
+  );
+}, 500);
+
+export default function NavBar() {
+  const history = useHistory();
   const [mobileOpen, setmobileOpen] = useState(false);
   const [activeClass, setActiveClass] = useState('is-ontop');
-  const brand = useOnGet('fast://brand')
 
+  const departments = useOnGet(`${systemConfig.serverBaseUrl}/departments`, { first: [] });
+  const categories = useOnGet(`${systemConfig.serverBaseUrl}/categories`, { first: { rows: [] } });
+  const classes = useStyles(styles);
+  const departmentalizedCategories = {};
+  departments.forEach((department) => {
+    departmentalizedCategories[department.department_id] = [];
+  });
+  categories.rows.forEach((category) => {
+    if (!departmentalizedCategories[category.department_id]) {
+      return;
+    }
+    departmentalizedCategories[category.department_id].push(category);
+  });
   function handleDrawerToggle() {
     setmobileOpen(!mobileOpen);
   }
-
 
   function scrollListener() {
     const scrollpos = window.scrollY;
@@ -33,6 +67,7 @@ function NavBar({ classes }) {
     }
   }
 
+
   useEffect(() => {
     window.addEventListener('scroll', scrollListener);
     return () => {
@@ -40,79 +75,36 @@ function NavBar({ classes }) {
     };
   });
 
-  const brandComponent = (
-    <Link to="/" className={classes.brand}>
-      {brand}
-    </Link>
-  );
-
-
   return (
     <div>
-      <AppBar className={`mainHeaderHolder ${classes.navBar}  ${activeClass}`}>
+      <AppBar className={`mainHeaderHolder ${classes.appBar}  ${activeClass}`}>
         <Toolbar className={classes.toolbar}>
           <div className={classes.flex}>
-            {brandComponent}
+            <Link to="/" className={classes.brand}>
+              SHOPMATE
+            </Link>
           </div>
           <Hidden mdDown>
             <div className={`departments categories ${classes.linksContainer}`}>
-              <NavDropdown
-                title="Regional"
-                className="department navDropdown"
-              >
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
+              {departments.map((department) => (
+                <NavDropdown
+                  key={department.department_id}
+                  title={department.name}
+                  className="department navDropdown"
                 >
-                  French
-                </NavDropdown.Item>
-
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
-                >
-                  Italian
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
-                >
-                  Irish
-                </NavDropdown.Item>
-              </NavDropdown>
-              <NavDropdown
-                title="Nature"
-                className="department navDropdown"
-              >
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
-                >
-                  Animal
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() => {}}
-                >
-                  Flower
-                </NavDropdown.Item>
-              </NavDropdown>
-              <NavDropdown
-                title="Seasonal"
-                className="department navDropdown"
-              >
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
-                >
-                  Christmas
-                </NavDropdown.Item>
-                <NavDropdown.Item
-                  onClick={() => {}}
-                  className="category"
-                >
-                  Valentine&apos;s
-                </NavDropdown.Item>
-              </NavDropdown>
+                  {departmentalizedCategories[department.department_id].map((category) => (
+                    <NavDropdown.Item
+                      key={category.category_id}
+                      onClick={() => {
+                        history.push(`/department/${department.department_id}/category/${category.category_id}/1`);
+                      }}
+                      className="category"
+                    >
+                      {category.name}
+                    </NavDropdown.Item>
+                  ))}
+                </NavDropdown>
+              ))}
             </div>
           </Hidden>
           <Hidden mdDown>
@@ -122,6 +114,7 @@ function NavBar({ classes }) {
               </div>
               <InputBase
                 placeholder="Search…"
+                onChange={(event) => search(history, event.target.value)}
                 name="search"
                 classes={{
                   root: classes.inputRoot,
@@ -173,5 +166,3 @@ function NavBar({ classes }) {
     </div>
   );
 }
-
-export default withStyles(styles, { withTheme: true })(NavBar);

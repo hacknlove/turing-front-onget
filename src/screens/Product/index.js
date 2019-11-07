@@ -80,7 +80,7 @@ function Product({ classes, match: { params } }) {
     );
   }
 
-  const rating = reviews.reduce((rate, review) => rate + review.rating, 0) / reviews.length;
+  const rating = reviews.reduce((rate, review) => rate + review.rating, 0) / (reviews.length || 1);
 
   const isDiscounted = parseFloat(product.discounted_price) > 0;
 
